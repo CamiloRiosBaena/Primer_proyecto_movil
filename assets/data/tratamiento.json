@@ -1,0 +1,74 @@
+[
+  {
+    "id": "trat-001",
+    "medicamento": {
+      "id": "med-001",
+      "nombre": "Paracetamol",
+      "dosis": "500mg",
+      "presentacion": "Tableta"
+    },
+    "frecuencia": "Cada 8 horas",
+    "fecha_inicio": "2026-06-01T09:00:00Z",
+    "fecha_fin": "2026-06-07T09:00:00Z",
+    "horarios": [
+      "09:00",
+      "17:00",
+      "01:00"
+    ],
+    "estado": {
+      "tipo": "activo"
+    },
+    "recordatorio": {
+      "minutos_antes": 30,
+      "alarma_activa": true
+    }
+  },
+  {
+    "id": "trat-002",
+    "medicamento": {
+      "id": "med-002",
+      "nombre": "Clonazepam",
+      "dosis": "200mg",
+      "presentacion": "Tableta"
+    },
+    "frecuencia": "Cada 6 horas",
+    "fecha_inicio": "2026-07-01T10:00:00Z",
+    "fecha_fin": "2026-08-07T10:00:00Z",
+    "horarios": [
+      "06:00",
+      "12:00",
+      "18:00",
+      "00:00"
+    ],
+    "estado": {
+      "tipo": "activo"
+    }
+  },
+  {
+    "id": "trat-003",
+    "medicamento": {
+      "id": "med-003",
+      "nombre": "Dolex",
+      "dosis": "500mg",
+      "presentacion": "Tableta"
+    },
+    "frecuencia": "Cada 4 horas",
+    "fecha_inicio": "2026-09-01T10:00:00Z",
+    "fecha_fin": "2026-09-07T10:00:00Z",
+    "horarios": [
+      "06:00",
+      "10:00",
+      "14:00",
+      "18:00",
+      "22:00"
+    ],
+    "estado": {
+      "tipo": "suspendido",
+      "razon": "Efectos secundarios"
+    },
+    "recordatorio": {
+      "minutos_antes": 30,
+      "alarma_activa": true
+    }
+  }
+]
