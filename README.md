@@ -2,77 +2,106 @@
 
 Aplicación móvil desarrollada en Flutter para gestionar tratamientos registrados por el usuario, incluyendo medicamentos, frecuencia, horarios, estados y recordatorios.
 
-El proyecto comenzó a partir de la plantilla inicial de Flutter y fue evolucionando durante el laboratorio hacia un modelo de dominio propio para la gestión de tratamientos.
+El proyecto parte de la plantilla inicial de Flutter y evoluciona hacia un modelo de dominio propio para la gestión de tratamientos, con separación entre la lógica del dominio y la fuente de datos.
 
-## El dominio
+## Dominio
 
-La entidad principal es `Tratamiento`, identificada mediante un `id`.
+La aplicación está construida alrededor de la entidad principal `Tratamiento`, identificada mediante un `id`.
 
 El dominio incluye:
 
 * `Tratamiento` — entidad principal del sistema.
-* `Medicamento` — medicamento asociado al tratamiento.
+* `Medicamento` — medicamento asociado a un tratamiento.
 * `Recordatorio` — objeto de valor que representa la configuración de una alarma.
-* `EstadoTratamiento` — jerarquía sellada que representa los estados `Activo`, `Suspendido` y `Finalizado`.
-* `TratamientosRepository` — contrato para acceder a los tratamientos independientemente de su fuente de datos.
+* `EstadoTratamiento` — jerarquía sellada que representa los estados:
+
+  * `Activo`
+  * `Suspendido`, con una razón obligatoria.
+  * `Finalizado`, con la fecha en que finalizó.
+* `TratamientosRepository` — contrato para acceder a los tratamientos sin depender de una fuente de datos concreta.
 * `TratamientosLocales` — implementación actual que obtiene los tratamientos desde un archivo JSON local.
 
-Los datos de ejemplo se encuentran en:
+El archivo utilizado como fuente de datos se encuentra en:
 
 ```text
 assets/data/tratamiento.json
 ```
 
+## Reglas de negocio
+
+La entidad `Tratamiento` contiene reglas propias del dominio, entre ellas:
+
+* Determinar si tiene un recordatorio activo.
+* Determinar si un tratamiento está vigente para una fecha determinada.
+* Determinar si un tratamiento ha superado su fecha programada de finalización.
+
+Las reglas que dependen del tiempo reciben la fecha actual como parámetro y no utilizan `DateTime.now()` internamente, facilitando su prueba de manera determinista.
+
 ## Decisión sobre Freezed
 
-La entidad `Tratamiento` utiliza **Freezed** para generar automáticamente código mecánico como:
+Inicialmente, `Tratamiento` fue implementado completamente a mano, incluyendo `copyWith`, igualdad, `hashCode` y `toString`.
 
-```text
-copyWith
-==
-hashCode
-toString
-```
+Posteriormente se incorporó **Freezed** para generar automáticamente estas partes mecánicas del modelo y reducir código repetitivo.
 
-Se decidió conservar manualmente `fromJson` y `toJson` para mantener el control sobre el formato de los datos y las validaciones mediante `CampoInvalido`, obteniendo mensajes más claros cuando el JSON contiene información incorrecta.
+Se decidió mantener manualmente `fromJson` y `toJson` para conservar el control sobre el formato del JSON y las validaciones mediante `CampoInvalido`. De esta forma, cuando un dato externo es incorrecto, la aplicación puede indicar qué campo produjo el error en lugar de depender únicamente de errores de conversión de tipos.
 
-Las reglas de negocio permanecen escritas dentro del dominio y no son generadas por Freezed.
+Por tanto, Freezed se utiliza para generar principalmente:
+
+* `copyWith`
+* `==`
+* `hashCode`
+* `toString`
+
+Mientras que las reglas de negocio y la lectura defensiva del JSON permanecen escritas explícitamente en el dominio.
 
 ## Fuente de datos
 
-Actualmente los tratamientos se cargan desde un archivo JSON incluido en los assets de Flutter.
+Actualmente los tratamientos son cargados desde un archivo JSON incluido en los assets de Flutter.
 
-El acceso a los datos se realiza a través de `TratamientosRepository`, permitiendo sustituir posteriormente la implementación local por otra fuente de datos sin modificar el código que depende del repositorio.
+El acceso se realiza mediante la interfaz `TratamientosRepository`, por lo que la fuente local puede ser sustituida posteriormente por otra implementación, como una base de datos o un servicio remoto, sin modificar el código que depende del repositorio.
 
 ## Pruebas
 
-El proyecto contiene pruebas para verificar:
+El proyecto incluye pruebas automatizadas para verificar, entre otros aspectos:
 
-* Serialización y deserialización de tratamientos.
-* Validación de campos JSON.
-* Manejo correcto de fechas UTC.
-* Igualdad y `hashCode`.
-* `copyWith`.
-* Estados de los tratamientos.
-* Reglas de negocio.
+* Ida y vuelta `Tratamiento → JSON → Tratamiento`.
+* Validación de campos obligatorios.
+* Rechazo de fechas inválidas.
+* Conservación de fechas en UTC.
+* Igualdad entre entidades.
+* Consistencia de `hashCode`.
+* Comparación de listas de horarios por contenido.
+* Funcionamiento de `copyWith`.
+* Reglas de vigencia y vencimiento.
+* Tratamientos suspendidos.
+* Recordatorios activos.
 * Lectura del repositorio local.
-* Búsqueda por identificador.
+* Búsqueda de tratamientos por identificador.
 * Filtrado de tratamientos activos.
 * Lectura del asset JSON real.
 
-Para ejecutar todas las pruebas:
+## Requisitos
+
+Para ejecutar el proyecto se necesita:
+
+* Flutter SDK en canal estable.
+* Dart incluido con Flutter.
+* Un emulador o dispositivo compatible configurado para `flutter run`.
+
+La instalación puede comprobarse con:
 
 ```bash
-flutter test
+flutter doctor
 ```
 
-Para ejecutar únicamente las pruebas del dominio:
+## Cómo clonar y ejecutar
+
+Clonar el repositorio:
 
 ```bash
-flutter test test/domain/
+git clone <URL_DEL_REPOSITORIO>
+cd primer_app
 ```
-
-## Cómo ejecutar el proyecto
 
 Instalar las dependencias:
 
@@ -80,7 +109,7 @@ Instalar las dependencias:
 flutter pub get
 ```
 
-Comprobar el código:
+Comprobar el análisis estático:
 
 ```bash
 flutter analyze
@@ -100,24 +129,30 @@ flutter run
 
 ## Generación de código
 
-Si se modifica la estructura de `Tratamiento`, se debe regenerar el código de Freezed con:
+La entidad `Tratamiento` utiliza Freezed.
+
+Si se modifica su estructura, el código generado se actualiza ejecutando:
 
 ```bash
 dart run build_runner build --delete-conflicting-outputs
 ```
 
+El archivo generado no debe editarse manualmente.
+
 ## Integración continua
 
-El proyecto utiliza GitHub Actions para ejecutar automáticamente en cada `push` y `pull_request`:
+El proyecto utiliza GitHub Actions para comprobar automáticamente el código ante cambios enviados al repositorio.
 
-```text
+El flujo de CI ejecuta:
+
+```bash
 flutter pub get
 dart format --set-exit-if-changed .
 flutter analyze --fatal-infos
 flutter test
 ```
 
-El flujo de integración continua se encuentra en:
+La configuración se encuentra en:
 
 ```text
 .github/workflows/ci.yml
