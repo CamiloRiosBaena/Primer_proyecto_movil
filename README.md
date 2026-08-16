@@ -1,4 +1,4 @@
-# Primer App — Gestión de Tratamientos
+# Primer App — Gestión de Tratamientos — PillBox
 
 Aplicación móvil desarrollada en Flutter para gestionar tratamientos registrados por el usuario, incluyendo medicamentos, frecuencia, horarios, estados y recordatorios.
 
